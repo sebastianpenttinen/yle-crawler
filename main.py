@@ -2,6 +2,8 @@ import bs4 as bs
 import sys
 import re
 import os
+import time
+
 import urllib.request
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
@@ -29,18 +31,28 @@ class Page(QWebEnginePage):
         self.app.quit()
 
 
-def main():
+def fetchStuff():
     page = Page(
         'https://haku.yle.fi/?query=morgonkollen&type=article&uiLanguage=sv')
     soup = bs.BeautifulSoup(page.html, 'html.parser')
 
     links = (soup.find('a', class_='ArticleResults__A-sc-858ijy-1 ffOqVh', href=True))
-    urls = re.findall(
-        'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
+    return links
+
+
+def main():
+    urls = []
+    count = 0
+    while (len(urls) == 0):
+        print('Trying to send attempt: ' + str(count))
+        links = fetchStuff()
+        urls = re.findall(
+            'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
+        time.sleep(5)
+        count += count
 
     fp = urllib.request.urlopen(urls[0])
     bytes = fp.read()
-
     content = bytes.decode("utf8")
     fp.close()
 
