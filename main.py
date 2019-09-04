@@ -1,11 +1,14 @@
 import bs4 as bs
 import sys
+import re
+import os
 import urllib.request
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
 from html.parser import HTMLParser
-import re
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 
 class Page(QWebEnginePage):
@@ -44,6 +47,20 @@ def main():
     file = open('file.html', 'w')
     file.write(content)
     file.close()
+
+    message = Mail(
+        from_email='',
+        to_emails='',
+        subject='Yle Morgonkollen',
+        html_content=content)
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 
 if __name__ == '__main__':
