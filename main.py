@@ -32,11 +32,18 @@ def main():
     soup = bs.BeautifulSoup(page.html, 'html.parser')
 
     links = (soup.find('a', class_='ArticleResults__A-sc-858ijy-1 ffOqVh', href=True))
-    print(links)
     urls = re.findall(
         'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
-    print("Original string: ", links)
-    print("Urls: ", urls)
+
+    fp = urllib.request.urlopen(urls[0])
+    bytes = fp.read()
+
+    content = bytes.decode("utf8")
+    fp.close()
+
+    file = open('file.html', 'w')
+    file.write(content)
+    file.close()
 
 
 if __name__ == '__main__':
