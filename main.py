@@ -36,18 +36,21 @@ def main():
     soup = bs.BeautifulSoup(page.html, 'html.parser')
 
     links = (soup.find('a', class_='ArticleResults__A-sc-858ijy-1 ffOqVh', href=True))
+    try:
 
-    urls = re.findall(
-        'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
+        urls = re.findall(
+            'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
 
-    fp = urllib.request.urlopen(urls[0])
-    bytes = fp.read()
-    content = bytes.decode("utf8")
-    fp.close()
+        fp = urllib.request.urlopen(urls[0])
+        bytes = fp.read()
+        content = bytes.decode("utf8")
+        fp.close()
 
-    soupArticle = bs.BeautifulSoup(content, 'html.parser')
-    articleOnly = (
-        soupArticle.find('div', class_='ydd-article__body'))
+        soupArticle = bs.BeautifulSoup(content, 'html.parser')
+        articleOnly = (
+            soupArticle.find('div', class_='ydd-article__body'))
+    except Exception as e:
+        print('There was no response')
 
     message = Mail(
         from_email='',
