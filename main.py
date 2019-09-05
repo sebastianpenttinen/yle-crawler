@@ -3,7 +3,6 @@ import sys
 import re
 import os
 import time
-
 import urllib.request
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
@@ -31,40 +30,30 @@ class Page(QWebEnginePage):
         self.app.quit()
 
 
-def fetchStuff():
+def main():
     page = Page(
         'https://haku.yle.fi/?query=morgonkollen&type=article&uiLanguage=sv')
     soup = bs.BeautifulSoup(page.html, 'html.parser')
 
     links = (soup.find('a', class_='ArticleResults__A-sc-858ijy-1 ffOqVh', href=True))
-    return links
 
-
-def main():
-    urls = []
-    count = 0
-    while (len(urls) == 0):
-        print('Trying to send attempt: ' + str(count))
-        links = fetchStuff()
-        urls = re.findall(
-            'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
-        time.sleep(5)
-        count += count
+    urls = re.findall(
+        'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
 
     fp = urllib.request.urlopen(urls[0])
     bytes = fp.read()
     content = bytes.decode("utf8")
     fp.close()
 
-    file = open('file.html', 'w')
-    file.write(content)
-    file.close()
+    soupArticle = bs.BeautifulSoup(content, 'html.parser')
+    articleOnly = (
+        soupArticle.find('div', class_='ydd-article__body'))
 
     message = Mail(
         from_email='',
         to_emails='',
         subject='Yle Morgonkollen',
-        html_content=content)
+        html_content=str(articleOnly))
     try:
         sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
         response = sg.send(message)
@@ -72,7 +61,7 @@ def main():
         print(response.body)
         print(response.headers)
     except Exception as e:
-        print(e.message)
+        print(e)
 
 
 if __name__ == '__main__':
