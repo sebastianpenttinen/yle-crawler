@@ -2,7 +2,6 @@ import bs4 as bs
 import sys
 import re
 import os
-import time
 import urllib.request
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
@@ -49,23 +48,28 @@ def main():
 
         soupArticle = bs.BeautifulSoup(content, "html.parser")
         articleOnly = soupArticle.find("div", class_="ydd-article__body")
-    except Exception as e:
-        print("There was no response")
 
-    message = Mail(
-        from_email="",
-        to_emails="",
-        subject="Yle Morgonkollen",
-        html_content=str(articleOnly),
-    )
-    try:
-        sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
-        response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        message = Mail(
+            from_email="",
+            to_emails="",
+            subject="Yle Morgonkollen",
+            html_content=str(articleOnly),
+        )
+
+        try:
+            sg = SendGridAPIClient(
+                os.environ.get("SENDGRID_API_KEY")
+            )  # insert your own api key in the env
+            response = sg.send(message)
+            print(response.status_code)
+            print(response.body)
+            print(response.headers)
+
+        except Exception as e:
+            print(e)
+
     except Exception as e:
-        print(e)
+        print("Something went wrong")
 
 
 if __name__ == "__main__":
