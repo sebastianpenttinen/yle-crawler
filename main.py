@@ -16,14 +16,14 @@ class Page(QWebEnginePage):
     def __init__(self, url):
         self.app = QApplication(sys.argv)
         QWebEnginePage.__init__(self)
-        self.html = ''
+        self.html = ""
         self.loadFinished.connect(self._on_load_finished)
         self.load(QUrl(url))
         self.app.exec_()
 
     def _on_load_finished(self):
         self.html = self.toHtml(self.Callable)
-        print('Load finished')
+        print("Load finished")
 
     def Callable(self, html_str):
         self.html = html_str
@@ -31,34 +31,35 @@ class Page(QWebEnginePage):
 
 
 def main():
-    page = Page(
-        'https://haku.yle.fi/?query=morgonkollen&type=article&uiLanguage=sv')
-    soup = bs.BeautifulSoup(page.html, 'html.parser')
+    page = Page("https://haku.yle.fi/?query=morgonkollen&type=article&uiLanguage=sv")
+    soup = bs.BeautifulSoup(page.html, "html.parser")
 
-    links = (soup.find('a', class_='ArticleResults__A-sc-858ijy-1 ffOqVh', href=True))
+    links = soup.find("a", class_="ArticleResults__A-sc-858ijy-1 ffOqVh", href=True)
     try:
 
         urls = re.findall(
-            'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(links))
+            "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            str(links),
+        )
 
         fp = urllib.request.urlopen(urls[0])
         bytes = fp.read()
         content = bytes.decode("utf8")
         fp.close()
 
-        soupArticle = bs.BeautifulSoup(content, 'html.parser')
-        articleOnly = (
-            soupArticle.find('div', class_='ydd-article__body'))
+        soupArticle = bs.BeautifulSoup(content, "html.parser")
+        articleOnly = soupArticle.find("div", class_="ydd-article__body")
     except Exception as e:
-        print('There was no response')
+        print("There was no response")
 
     message = Mail(
-        from_email='',
-        to_emails='',
-        subject='Yle Morgonkollen',
-        html_content=str(articleOnly))
+        from_email="",
+        to_emails="",
+        subject="Yle Morgonkollen",
+        html_content=str(articleOnly),
+    )
     try:
-        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
         response = sg.send(message)
         print(response.status_code)
         print(response.body)
@@ -67,5 +68,5 @@ def main():
         print(e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
